@@ -74,6 +74,7 @@ const parseConfig = async (config) => {
   const etherscanApiKey = config.api_keys && config.api_keys.etherscan
   const bscscanApiKey = config.api_keys && config.api_keys.bscscan
   const hecoinfoApiKey = config.api_keys && config.api_keys.hecoinfo
+  const oklinkApiKey = config.api_keys && config.api_keys.oecscan
   const ftmscanApiKey = config.api_keys && config.api_keys.ftmscan
   const polygonscanApiKey = config.api_keys && config.api_keys.polygonscan
   const snowtraceApiKey = config.api_keys && config.api_keys.snowtrace
@@ -84,11 +85,13 @@ const parseConfig = async (config) => {
       ? ftmscanApiKey
       : apiUrl.includes('hecoinfo') && hecoinfoApiKey
         ? hecoinfoApiKey
-        : apiUrl.includes('polygonscan') && polygonscanApiKey
-          ? polygonscanApiKey
-          : apiUrl.includes('snowtrace') && snowtraceApiKey
-            ? snowtraceApiKey
-            : etherscanApiKey
+        : apiUrl.includes('oklink') && oklinkApiKey
+          ? oklinkApiKey
+          : apiUrl.includes('polygonscan') && polygonscanApiKey
+            ? polygonscanApiKey
+            : apiUrl.includes('snowtrace') && snowtraceApiKey
+              ? snowtraceApiKey
+              : etherscanApiKey
 
   enforce(apiKey, 'No Etherscan API key specified', logger)
   enforce(config._.length > 1, 'No contract name(s) specified', logger)
@@ -105,6 +108,7 @@ const parseConfig = async (config) => {
   }
 
   return {
+    config,
     apiUrl,
     apiKey,
     networkId,
@@ -145,7 +149,10 @@ const verifyContract = async (artifact, options) => {
 
 const sendVerifyRequest = async (artifact, options) => {
   const compilerVersion = extractCompilerVersion(artifact)
-  const encodedConstructorArgs = options.forceConstructorArgs || await fetchConstructorValues(artifact, options)
+  let encodedConstructorArgs = ''
+  if (+options.networkId !== 65 && +options.networkId !== 66) {
+    encodedConstructorArgs = options.forceConstructorArgs || await fetchConstructorValues(artifact, options)
+  }
   const inputJSON = getInputJSON(artifact, options)
 
   // Remove the 'project:' prefix that was added in Truffle v5.3.14
@@ -163,10 +170,21 @@ const sendVerifyRequest = async (artifact, options) => {
     constructorArguements: encodedConstructorArgs
   }
 
+  let instance = axios
+  if (+options.chainId === 65 || +options.chainId === 66) {
+    instance = axios.create({
+      headers: { 'x-apiKey': options.apiKey }
+    })
+  }
+  // console.log('print: ', options.apiUrl, postQueries)
+
   try {
     logger.debug('Sending verify request with POST arguments:')
     logger.debug(JSON.stringify(postQueries, null, 2))
-    return await axios.post(options.apiUrl, querystring.stringify(postQueries))
+    if (+options.chainId === 65 || +options.chainId === 66) {
+      return await instance.post(options.apiUrl, postQueries)
+    }
+    return await instance.post(options.apiUrl, querystring.stringify(postQueries))
   } catch (error) {
     logger.debug(error.message)
     throw new Error(`Failed to connect to Etherscan API at url ${options.apiUrl}`)
@@ -290,6 +308,7 @@ const verificationStatus = async (guid, options) => {
   while (true) {
     await delay(1000)
 
+    let instance = axios
     try {
       const qs = querystring.stringify({
         apiKey: options.apiKey,
@@ -297,7 +316,12 @@ const verificationStatus = async (guid, options) => {
         action: 'checkverifystatus',
         guid
       })
-      const verificationResult = await axios.get(`${options.apiUrl}?${qs}`)
+      if (+options.chainId === 65 || +options.chainId === 66) {
+        instance = axios.create({
+          headers: { 'x-apiKey': options.apiKey }
+        })
+      }
+      const verificationResult = await instance.get(`${options.apiUrl}?${qs}`)
       if (verificationResult.data.result !== VerificationStatus.PENDING) {
         return verificationResult.data.result
       }
