@@ -74,7 +74,7 @@ const parseConfig = async (config) => {
   const etherscanApiKey = config.api_keys && config.api_keys.etherscan
   const bscscanApiKey = config.api_keys && config.api_keys.bscscan
   const hecoinfoApiKey = config.api_keys && config.api_keys.hecoinfo
-  const oklinkApiKey = config.api_keys && config.api_keys.oecscan
+  const oklinkApiKey = config.api_keys && config.api_keys.oklink
   const ftmscanApiKey = config.api_keys && config.api_keys.ftmscan
   const polygonscanApiKey = config.api_keys && config.api_keys.polygonscan
   const snowtraceApiKey = config.api_keys && config.api_keys.snowtrace

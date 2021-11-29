@@ -1,6 +1,6 @@
 {
-  "name": "@okexchain/truffle-plugin-verify",
-  "version": "0.0.1",
+  "name": "@oec-community/truffle-plugin-verify",
+  "version": "0.0.2",
   "description": "Verify your deployed smart contracts on Etherscan from the Truffle CLI",
   "repository": "https://github.com/rkalis/truffle-plugin-verify",
   "main": "verify.js",
