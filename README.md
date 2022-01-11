@@ -12,8 +12,8 @@ I wrote a tutorial on my website that goes through the entire process of install
 ## Installation / preparation
 1. Install the plugin with npm or yarn
     ```sh
-    npm install -D truffle-plugin-verify
-    yarn add -D truffle-plugin-verify
+    npm install -D @oec-community/truffle-plugin-verify
+    yarn add -D @oec-community/truffle-plugin-verify
     ```
 2. Add the plugin to your `truffle-config.js` file
     ```js
@@ -32,7 +32,8 @@ I wrote a tutorial on my website that goes through the entire process of install
       /* ... rest of truffle-config */
 
       api_keys: {
-        etherscan: 'MY_API_KEY'
+        etherscan: 'MY_API_KEY',
+        oklink: 'MY_API_KEY'
       }
     }
     ```
